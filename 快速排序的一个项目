@@ -1,0 +1,79 @@
+#include <iostream>
+#include <vector>
+using namespace std;
+typedef int ElemType;
+
+//交换数字
+void swap(ElemType& a, ElemType& b)
+{
+	ElemType t = a;
+	a = b;
+	b = t;
+}
+
+//快速排序
+void Sort(vector<int>& ISBN, int left, int right)
+{
+	int i, j, temp;
+	if (left >= right)
+		return;
+	i = left;
+	j = right;
+	temp = ISBN[left];
+	while (i != j)
+	{
+		while (ISBN[j]>= temp && i < j)
+			j--;
+		while (ISBN[i] <= temp && i < j)
+			i++;
+		if (i < j)
+			swap(ISBN[i], ISBN[j]);
+	}
+	swap(ISBN[left], ISBN[i]);
+	Sort(ISBN, left, i - 1);
+	Sort(ISBN, i + 1, right);
+}
+
+//有序数组去重 
+void removeDuplicates(vector<ElemType>& ISBN)
+{
+	int cur = 1;
+	int tmp = 0;
+
+	while (cur < ISBN.size())
+	{
+		if (ISBN[cur] == ISBN[tmp])
+		{
+			cur++;
+		}
+		else
+		{
+			tmp++;
+			swap(ISBN[tmp], ISBN[cur]);
+			cur++;
+		}
+	}
+	ISBN.resize(tmp + 1);
+}
+
+
+//输出数组
+void Display(vector<ElemType>& ISBN)
+{
+	for (int i = 0; i < ISBN.size(); i++)
+		cout << ISBN[i] << " ";
+	cout << endl;
+}
+
+int main()
+{
+	int n;
+	cin >> n;
+	vector<int> ISBN(n);//建立vector容器ISBN，设置其大小为n
+	for (int i = 0; i < n; i++)
+		cin >> ISBN[i];
+	Sort(ISBN, 0, ISBN.size() - 1);
+	removeDuplicates(ISBN);
+	Display(ISBN);
+	return 0;
+}
