@@ -1,0 +1,178 @@
+#include <iostream>
+#include <malloc.h>
+using namespace std;
+
+typedef int ElemType;
+typedef struct DLinkNode
+{
+	ElemType data;
+	struct DLinkNode* prior;
+	struct DLinkNode* next;
+}DLinkNode;
+
+//初始化双链表
+void InitList(DLinkNode*& L)
+{
+	L = (DLinkNode*)malloc(sizeof(DLinkNode));
+	L->prior = NULL;
+	L->next = NULL;
+}
+
+//头插法建立双链表
+void CreateListF(DLinkNode*& L, ElemType a[], int n)
+{
+	DLinkNode* s;
+	InitList(L);
+	for (int i = 0; i < n; i++)
+	{
+		s = (DLinkNode*)malloc(sizeof(DLinkNode));
+		s->data = a[i];
+		s->next = L->next;
+		if (L->next != NULL)
+			L->next->prior = s;
+		s->prior = L;
+		L->next = s;
+	}
+}
+
+//尾插法建立双链表
+void CreateListR(DLinkNode*& L, ElemType a[], int n)
+{
+	DLinkNode* r, * s;
+	InitList(L);
+	r = L;
+	for (int i = 0; i < n; i++)
+	{
+		s = (DLinkNode*)malloc(sizeof(DLinkNode));
+		s->data = a[i];
+		r->next = s;
+		s->prior = r;
+		r = s;
+	}
+	r->next = NULL;
+}
+
+//双链表的插入
+void ListInsert(DLinkNode*& L, int i, ElemType e)
+{
+	DLinkNode* s, * p;
+	p = L;
+	int j = 0;
+	while (j < i - 1 && p != NULL)
+	{
+		p = p->next;
+		j++;
+	}
+	if (p == NULL)
+		return;
+	else
+	{
+		s = (DLinkNode*)malloc(sizeof(DLinkNode));
+		s->data = e;
+		s->next = p->next;
+		if (p->next != NULL)
+			p->next->prior = s;
+		p->next = s;
+		s->prior = p;
+	}
+}
+
+//双链表的删除
+void ListDelete(DLinkNode*& L, int i, ElemType e)
+{
+	DLinkNode* s, * q, * p;
+	int j = 0;
+	p = L;
+	while (j < i - 1 && p != NULL)
+	{
+		p = p->next;
+		j++;
+	}
+	if (p == NULL)
+		return;
+	else
+	{
+		q = p->next;
+		if (q == NULL)
+		{
+			e = q->data;
+			return;
+		}
+		p->next = q->next;
+		if (q->next != NULL)
+		q->next->prior = p;
+		free(q);
+	}
+}
+
+//将双链表所有结点倒置
+void reverse(DLinkNode*& L)
+{
+	DLinkNode* p, * q;
+	p = L->next;
+	L->next = NULL;
+	while (p != NULL)
+	{
+		q = p->next;
+		p->next = L->next;
+		if (L->next != NULL)
+			L->next->prior = p;
+		L->next = p;
+		p->prior = L;
+		p = q;
+	}
+}
+
+//判断双循环链表是否对称
+void Symm(DLinkNode* L)
+{
+	DLinkNode* p, * q;
+	p = L->next;
+	q = L->prior;
+	while (1)
+	{
+		if (p->data != q->data)
+		{
+			cout << "不对称！" << endl;
+			return;
+		}
+		else
+		{
+			if (p == q || p == q->prior)
+			{
+				cout << "对称！" << endl;
+				break;
+			}
+			p = p->next;
+			q = q->prior;
+		}
+	}
+}
+
+//输出双链表
+void DisplayList(DLinkNode* L)
+{
+	DLinkNode* p;
+	p = L->next;
+	while (p != NULL)
+	{
+		cout << p->data << " ";
+		p = p->next;
+	}
+	cout << endl;
+}
+int main()
+{
+	DLinkNode* L;
+	ElemType a[] = { 1,2,2,1 };
+	//CreateListF(L, a, sizeof(a) / sizeof(ElemType));
+	//ListInsert(L, 4, 100);
+	//DisplayList(L);
+	CreateListR(L, a, sizeof(a) / sizeof(ElemType));
+	//ListDelete(L, 8, 0);
+	DisplayList(L);
+	reverse(L);
+	DisplayList(L);
+	Symm(L);
+	return 0;
+}
