@@ -1,0 +1,208 @@
+#include <iostream>
+#include <malloc.h>
+using namespace std;
+typedef int ElemType;
+
+typedef struct Lnode
+{
+	ElemType data;
+	struct Lnode* next;
+}Linknode;
+
+//头插法建立链表
+void CreateListF(Linknode*& L, ElemType a[], ElemType n)
+{
+	Linknode* s;
+	L = (Linknode*)malloc(sizeof(Linknode));
+	L->next = NULL;
+	for (int i = n-1; i >=0 ; i--)
+	{
+		s = (Linknode*)malloc(sizeof(Linknode));
+		s->data = a[i];
+		s->next = L->next;
+		L->next = s;
+	}
+}
+
+//尾插法建表
+void CreatListR(Linknode*& L, int n)
+{
+	Linknode* r,*s;
+	L = (Linknode*)malloc(sizeof(Linknode));
+	L->next = NULL;
+	r = L;
+	for (int i = 0; i < n; i++)
+	{
+		s= (Linknode*)malloc(sizeof(Linknode));
+		cin >> s->data;
+		r->next = s;
+		r = s;
+	}
+	r->next = NULL;
+}
+
+//初始化线性表
+
+void IniList(Linknode*& L)
+{
+	L= (Linknode*)malloc(sizeof(Linknode));
+	L->next = NULL;
+}
+
+//销毁线性表
+void DestoryList(Linknode*& L)
+{
+	Linknode* p;
+	while (L != NULL)
+	{
+		p = L;
+		L = L->next;
+		free(p);
+	}
+}
+
+//判断线性表是否为空表
+bool ListEmpty(Linknode* L)
+{
+	return(L->next == NULL);
+}
+
+//求线性表的长度
+void ListLength(Linknode* L)
+{
+	int length=0;
+	Linknode* p = L;
+	while (p->next!=NULL)
+	{
+		length++;
+		p = p->next;
+	}
+	cout<<"链表的长度为："<<length<<endl;
+}
+
+//输出线性表
+void DispList(Linknode* L)
+{
+	Linknode* p;
+	p = L;
+	while (p->next != NULL)
+	{
+		p = p->next;
+		cout << p->data << " ";
+	}
+	cout << endl;
+}
+
+//求线性表L中位置i的数据元素
+void GetElem(Linknode* L, int i, ElemType& e)
+{
+	int j = 0;
+	Linknode* p;
+	p = L;
+	while (j < i && p != NULL)
+	{
+		j++;
+		p = p->next;
+	}
+	if (p == NULL)
+		return;
+	else
+	{
+		e = p->data;
+		return;
+	}
+}
+
+//按元素查找LocateElem(L,e)
+int LocateElem(Linknode* L, ElemType e)
+{
+	Linknode* p;
+	p = L->next;
+	int j = 1;
+	while (p!= NULL)
+	{
+		if (p->data == e)
+		{
+			return j;
+			break;
+		}
+		else
+		{
+			j++;
+			p = p->next;
+		}
+	}
+}
+
+//插入数据元素
+void ListInsert(Linknode*& L, int i, ElemType e)
+{
+	int j = 0;
+	Linknode* p = L;
+	Linknode* s;
+	while (j < i - 1 && p != NULL)
+	{
+		p = p->next;
+		j++;
+	}
+	if (p == NULL)
+	{
+		cout << "Error!" << endl;
+		return;
+	}
+	else
+	{
+		IniList(s);
+		s->data = e;
+		s->next = p->next;
+		p->next = s;
+	}
+}
+
+//删除数据元素
+void ListDelete(Linknode*& L, int i,ElemType&e)
+{
+	int j = 0;
+	Linknode* p = L;
+	Linknode *q;
+	while (j < i - 1 && p != NULL)
+	{
+		p = p->next;
+		j++;
+	}
+	if (p == NULL)
+	{
+		cout << "Error!" << endl;
+			return;
+	}
+	else
+	{
+		q = p->next;
+		if (q == NULL)
+		{
+			e = q->data;
+			return;
+		}
+		p->next = q->next;
+		free(q);
+	}
+}
+int main()
+{
+	Linknode* L;
+	ElemType e;
+	ElemType arr[] = { 1,6,9,3,5,2,4,7,16,54 };
+	CreateListF(L, arr, sizeof(arr) / sizeof(ElemType));
+	//CreatListR(L, 10);
+	ListInsert(L, 4, 19);
+	DispList(L);
+	ListLength(L);
+	cout << "删除节点后：" << endl;
+	ListDelete(L, 4, e);
+	DispList(L);
+	ListLength(L);
+	//GetElem(L, 7,e);
+	//cout << "位置为i的元素为：" << e << endl;
+	//cout << LocateElem(L, 3) << endl;
+	return 0;
+}
