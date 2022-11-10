@@ -1,0 +1,115 @@
+#include <iostream>
+#include <malloc.h>
+using namespace std;
+typedef int ElemType;
+
+typedef struct Lnode
+{
+	ElemType data;
+	struct Lnode* next;
+}Linknode;
+
+//尾插法建表
+void CreatListR(Linknode*& L, int n)
+{
+	Linknode* r, * s;
+	L = (Linknode*)malloc(sizeof(Linknode));
+	L->next = NULL;
+	r = L;
+	for (int i = 0; i < n; i++)
+	{
+		s = (Linknode*)malloc(sizeof(Linknode));
+		cin >> s->data;
+		r->next = s;
+		r = s;
+	}
+	r->next = NULL;
+}
+
+//销毁线性表
+void DestoryList(Linknode*& L)
+{
+	Linknode* p;
+	while (L != NULL)
+	{
+		p = L;
+		L = L->next;
+		free(p);
+	}
+}
+
+//输出线性表
+void DispList(Linknode* L)
+{
+	Linknode* p;
+	p = L;
+	while (p->next != NULL)
+	{
+		p = p->next;
+		cout << p->data << " ";
+	}
+	cout << endl;
+}
+
+//有序表的二路归并算法
+void UnionList(Linknode* La, Linknode* Lb, Linknode*& L)
+{
+	L=(Linknode*)malloc(sizeof(Linknode));
+	Linknode* p, * q, * r,*s;
+	p = La->next;
+	q = Lb->next;
+	r = L;
+	while (p != NULL && q != NULL)
+	{
+		if (p->data < q->data)
+		{
+			s= (Linknode*)malloc(sizeof(Linknode));
+			s->data = p->data;
+			r->next = s;
+			r = s;
+			p = p->next;
+		}
+		else
+		{
+			s = (Linknode*)malloc(sizeof(Linknode));
+			s->data = q->data;
+			r->next = s;
+			r = s;
+			q = q->next;
+		}
+	}
+	while (p != NULL)
+	{
+		s = (Linknode*)malloc(sizeof(Linknode));
+		s->data = p->data;
+		r->next = s;
+		r = s;
+		p = p->next;
+	}
+	while (q != NULL)
+	{
+		s = (Linknode*)malloc(sizeof(Linknode));
+		s->data = q->data;
+		r->next = s;
+		r = s;
+		q = q->next;
+	}
+	r->next = NULL;
+}
+int main()
+{
+	Linknode* L,*La,*Lb;
+	ElemType arr1[] = { 1,3,5 };
+	ElemType arr2[] = { 2,4,6,8 };
+	CreatListR(La, sizeof(arr1) / sizeof(ElemType));
+	CreatListR(Lb, sizeof(arr2) / sizeof(ElemType));
+	//_ListInsert(L, 4);
+
+	UnionList(La, Lb, L);
+	DispList(L);
+
+	DestoryList(La);
+	DestoryList(Lb);
+	DestoryList(L);
+	return 0;
+}
