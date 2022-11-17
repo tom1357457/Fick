@@ -1,0 +1,93 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+typedef int ElemType;
+//链队中的数据结点
+typedef struct DataNode
+{
+	ElemType data;
+	struct DataNode* next;
+}DataNode;
+//链队结点类型
+typedef struct LinkQuNode
+{
+	DataNode* front;
+	DataNode* rear;
+}LinkQuNode;
+
+//初始化链队
+void InitQueue(LinkQuNode*& q)
+{
+	q = (LinkQuNode*)malloc(sizeof(LinkQuNode));
+	q->front = q->rear = NULL;
+}
+
+//销毁队列
+void DestroyQueue(LinkQuNode*& q)
+{
+	DataNode* p, * r;//注意指针的数据类型
+	p = q->front;
+	while (p != NULL)
+	{
+		r = p->next;
+		free(p);
+		p = r;
+	}
+}
+
+//判断队列是否为空
+bool QueueEmpty(LinkQuNode* q)
+{
+	return(q->rear == NULL);
+}
+
+//进队
+void enQueue(LinkQuNode*& q, ElemType e)
+{
+	DataNode* p;
+	p = (DataNode*)malloc(sizeof(DataNode));
+	p->data = e;
+	p->next = NULL;
+	if (q->rear == NULL)//若链队为空，则该结点既是队首节点又是队尾结点
+	{
+		q->front = q->rear = p;
+	}
+	else
+	{
+		q->rear->next = p;
+		q->rear = p;
+	}
+}
+
+//出队,删除链队首结点
+void deQueue(LinkQuNode*& q, ElemType& e)
+{
+	DataNode* p;
+	p = q->front;
+	if (q->rear == NULL)
+		return;
+	if (q->front == q->rear)//链队中只有一个节点
+		q->front = q->rear = NULL;
+	else q->front = p->next;
+	e = p->data;
+	free(p);
+}
+
+int main()
+{
+	ElemType e;
+	LinkQuNode* q;
+	InitQueue(q);
+	for (int i = 0; i < 5; i++)
+	{
+		enQueue(q, i);
+	}
+	for (int i = 0; i < 5; i++)
+	{
+		deQueue(q, e);
+		cout << e << " ";
+	}
+	DestroyQueue(q);
+	cout << endl;
+	return 0;
+}
