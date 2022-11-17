@@ -1,0 +1,91 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+typedef int ElemType;
+//链队中的数据结点
+typedef struct LinkQuNode
+{
+	ElemType data;
+	struct LinkQuNode * next;
+}LinkQuNode;
+
+//初始化链队
+void InitQueue(LinkQuNode*& rear)
+{
+	rear = NULL;
+}
+
+//销毁队列
+void DestroyQueue(LinkQuNode*& rear)
+{
+	LinkQuNode* p,*q;
+	p = rear->next;
+	while (p != rear)
+	{
+		q = p->next;
+		free(p);
+		p = q;
+	}
+	free(p);
+}
+
+//判断队列是否为空
+bool QueueEmpty(LinkQuNode* rear)
+{
+	return rear == NULL;
+}
+
+//进队
+void enQueue(LinkQuNode*& rear, ElemType e)
+{
+	LinkQuNode* p;
+	p = (LinkQuNode*)malloc(sizeof(LinkQuNode));
+	p->data = e;
+	if (rear == NULL)
+	{
+		p->next = p;//改为循环链表
+		rear = p;
+	}
+	else
+	{
+		p->next = rear->next;
+		rear->next = p;//改为循环链表
+		rear = p;
+	}
+}
+
+//出队,删除链队首结点
+void deQueue(LinkQuNode*& rear, ElemType& e)
+{
+	LinkQuNode* p;
+	p = rear->next;
+	if (rear == NULL)
+		return;
+	if (rear->next == rear)
+	{
+		rear = NULL;
+	}
+	else
+	{
+		rear->next = p->next;
+	}
+	e = p->data;
+	free(p);
+}
+
+int main()
+{
+	ElemType e;
+	LinkQuNode* rear;
+	InitQueue(rear);
+	for (int i = 0; i < 5; i++)
+		enQueue(rear, i);
+	for (int i = 0; i < 5; i++)
+	{
+		deQueue(rear, e);
+		cout << e << ' ';
+	}
+	DestroyQueue(rear);
+	cout << endl;
+	return 0;
+}
