@@ -1,0 +1,156 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+typedef char ElemType;
+typedef struct node
+{
+	ElemType data;
+	struct node* lchild, * rchild;//指向左子树和右子树
+}BTNode;
+
+//括号法创建二叉树
+void Create(BTNode*& root, char* str)
+{
+	BTNode* p, * m;
+	root = NULL;
+	stack<BTNode*> s;
+	int i = 0, k;
+	char ch = str[i];
+	while (ch != '\0')
+	{
+		switch (ch)
+		{
+		case '(':s.push(p);
+			k = 1;
+			break;
+		case')':s.pop();
+			break;
+		case',':k = 2;
+			break;
+		default:
+			p = (BTNode*)malloc(sizeof(BTNode));
+			p->data = ch;
+			p->lchild = p->rchild = NULL;
+			if (root == NULL)
+				root = p;
+			else
+			{
+				if (k == 1)
+					s.top()->lchild = p;
+				else
+					s.top()->rchild = p;
+			}
+		}
+		i++;
+		ch = str[i];
+	}
+}
+//递归创建二叉树
+void CreateTree(BTNode*& t)
+{
+	char x;
+	cin >> x;
+	if (x == '*')
+	{
+		t = NULL;
+		return;
+	}
+	else
+	{
+		t = (BTNode*)malloc(sizeof(BTNode));
+		t->data = x;
+		CreateTree(t->lchild);
+		CreateTree(t->rchild);
+	}
+}
+//销毁二叉链
+void DestroyBTree(BTNode*& t)
+{
+	if (t == NULL)
+	{
+		return;
+	}
+	else
+	{
+		DestroyBTree(t->lchild);
+		DestroyBTree(t->rchild);
+		free(t);
+	}
+}
+//查找结点
+BTNode* FindNode(BTNode* t, char x)
+{
+	BTNode* p;
+	if (t == NULL)
+		return NULL;
+	else if (t->data == x)
+		return t;
+	else
+	{
+		p = FindNode(t->lchild, x);
+		if (p != NULL)
+			return p;
+		else
+			return FindNode(t->rchild,x);
+	}
+}
+//找孩子结点
+BTNode* LchildNode(BTNode* p)
+{
+	return p->lchild;
+}
+BTNode* RchildNode(BTNode* p)
+{
+	return p->rchild;
+}
+//求树高
+int BTHeight(BTNode* t)
+{
+	BTNode* p;
+	int lchilddep, rchilddep;
+	if (t == NULL)
+		return 0;
+	else
+	{
+		lchilddep = BTHeight(t->lchild);
+		rchilddep = BTHeight(t->rchild);
+		if (lchilddep > rchilddep)
+			return(lchilddep + 1);
+		else return(rchilddep + 1);
+	}
+}
+//输出二叉树
+void DispBTree(BTNode* t)
+{
+	if (t == NULL)
+		return;
+	else
+	{
+		cout << t->data;
+		if (t->lchild != NULL || t->rchild != NULL)
+		{
+			cout << '(';
+			DispBTree(t->lchild);
+			if (t->rchild != NULL)
+				cout << ',';
+			DispBTree(t->rchild);
+			cout << ')';
+		}
+	}
+}
+int main()
+{
+	BTNode* t,*p;
+	char str[] = "A(B(D(,G)),C(E,F))";
+	Create(t,str);
+	cout << "t:";
+	DispBTree(t);
+	cout << endl;
+	cout << "t的高度：" << BTHeight(t) << endl;
+	p = FindNode(t, 'F');
+	if (p != NULL)
+		cout << "t中存在F结点" << endl;
+	else cout << "t中不存在F结点" << endl;
+	DestroyBTree(t);
+	return 0;
+}
