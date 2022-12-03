@@ -1,0 +1,113 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+typedef char ElemType;
+typedef struct node
+{
+	ElemType data;
+	struct node* lchild, * rchild;//指向左子树和右子树
+}BTNode;
+typedef struct element
+{
+	BTNode* ptr;
+	int flag;//1表示第一次入栈，2表示第二次入栈
+}element;
+//非递归先序遍历二叉树
+void PreOrder(BTNode* t)
+{
+	BTNode* p = t;
+	stack<BTNode*> s;
+	while (p != NULL || !s.empty())//当p==NULL&&栈为空时遍历结束
+	{
+		while (p != NULL)//当左子树不为空时一直遍历左子树
+		{
+			cout << p->data;//边访问边入栈
+			s.push(p);
+			p = p->lchild;
+		}
+		if (!s.empty())
+		{
+			p = s.top();//出栈后指针指回出栈的结点
+			s.pop();
+			p = p->rchild;//访问右子树
+		}
+	}
+}
+//中序遍历的非递归算法
+void InOrder(BTNode* t)
+{
+	BTNode* p;
+	p = t;
+	stack<BTNode*> s;
+	while (p != NULL || !s.empty())
+	{
+		while (p != NULL)
+		{
+			s.push(p);
+			p = p->lchild;
+		}
+		if (!s.empty())
+		{
+			p = s.top();
+			s.pop();
+			cout << p->data;
+			p = p->rchild;
+		}
+	}
+}
+//非递归后序遍历
+void PostOrder(BTNode* t)
+{
+	BTNode* p;
+	element elem;
+	p = t;
+	stack<element> s;
+	while (p != NULL || !s.empty())
+	{
+		if (p != NULL)//第一次入栈，访问左子树
+		{
+			elem.ptr = p;
+			elem.flag = 1;//表示第一次入栈
+			s.push(elem);
+			p = p->lchild;//访问左孩子
+		}
+		else
+		{
+			elem = s.top();
+			s.pop();//出栈
+			if (elem.flag == 1)//说明只访问过左孩子，还需要继续访问右孩子
+			{
+				s.push(elem);
+				elem.flag = 2;//表示第二次入栈
+				p = p->rchild;//访问右孩子
+			}
+			else
+			{
+				//flag==2，表示左右孩子都访问过了
+				cout << p->data;//访问根结点
+				p = NULL;//p=NULL,下次循环从第一次出栈开始
+			}
+		}
+	}
+}
+//非递归层次遍历
+void LevelOrder(BTNode* t)
+{
+	BTNode* p;
+	queue<BTNode*> q;
+	q.push(t);//根节点进队
+	while (!q.empty())
+	{
+		p=q.front();
+		q.pop();//头结点出队
+		cout << p->data;//访问头结点
+		if (p->lchild != NULL)
+			q.push(p->lchild);//有左孩子时进队
+		if (p->rchild != NULL)
+			q.push(p->rchild);//有右孩子时进队
+	}
+}
+int main()
+{
+	return 0;
+}
