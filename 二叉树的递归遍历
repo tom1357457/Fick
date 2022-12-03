@@ -1,0 +1,80 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+typedef char ElemType;
+typedef struct node
+{
+	ElemType data;
+	struct node* lchild, * rchild;//指向左子树和右子树
+}BTNode;
+
+//先序遍历
+void PreOrder(BTNode* t)
+{
+	if (t == NULL)
+		return;
+	else
+	{
+		cout << t->data;//访问根节点
+		PreOrder(t->lchild);
+		PreOrder(t->rchild);
+	}
+}
+//中序遍历
+void InOrder(BTNode* t)
+{
+	if (t == NULL)
+		return;
+	else
+	{
+		InOrder(t->lchild);
+		InOrder(t->rchild);
+		cout << t->data;
+	}
+}
+//后序遍历
+void PostOrder(BTNode* t)
+{
+	if (t == NULL)
+		return;
+	else
+	{
+		PostOrder(t->lchild);
+		PostOrder(t->rchild);
+		cout << t->data;
+	}
+}
+//求二叉树叶子结点个数
+int LeafNum(BTNode* t)
+{
+	int num = 0;
+	if (t == NULL)
+		return 0;
+	else if (t->lchild == NULL && t->rchild == NULL)
+		return 1;
+	else return LeafNum(t->lchild) + LeafNum(t->rchild);//二叉树叶子结点=左子树叶子树+右子树叶子树
+}
+//二叉树的总结点数
+int Nodes(BTNode* t)
+{
+	if (t == NULL)
+		return 0;
+	else
+	{
+		return (Nodes(t->lchild) + Nodes(t->rchild) + 1);//二叉树总结点个数=左子树结点数+右子树结点数+1
+	}
+}
+//二叉树高度
+int HeightTree(BTNode* t)
+{
+	if (t == NULL)
+		return 0;
+	else
+	{
+		return max(HeightTree(t->lchild), HeightTree(t->rchild)) + 1;//二叉树高度=max(左子树高度,右子树高度)+1
+	}
+}
+int main()
+{
+	return 0;
+}
