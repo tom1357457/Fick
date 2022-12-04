@@ -1,0 +1,151 @@
+#include <bits/stdc++.h>
+#define MAXSIZE 100//矩阵中非零元素最多个数
+using namespace std;
+
+const int M = 3;
+const int N = 4;
+typedef int ElemType;
+//三元组定(存放一个非零元素)
+typedef struct
+{
+	int r;//行号
+	int c;//列号
+	ElemType value;//元素值
+}TupNode;
+//三元组顺序表定义(存放整个稀疏矩阵)
+typedef struct
+{
+	int rows;//行数值
+	int cols;//列数值
+	int nums;//非零元素个数
+	TupNode data[MAXSIZE];
+}TSMatrix;
+
+
+//创建三元组顺序表
+void CreatMat(TSMatrix& t, ElemType A[M][N])
+{
+	t.rows = M;
+	t.cols = N;
+	t.nums = 0;
+	for (int i = 0; i < M; i++)
+	{
+		for (int j = 0; j < N; j++)
+		{
+			if (A[i][j] != 0)
+			{
+				t.data[t.nums].r = i;
+				t.data[t.nums].c = j;
+				t.data[t.nums].value = A[i][j];
+				t.nums++;
+			}
+		}
+	}
+}
+//三元组顺序表元素赋值
+void Value(TSMatrix& t, ElemType x, int i, int j)
+{
+	int k = 0;
+	if (i > t.rows || j > t.cols)//检查是否越界
+		return;
+	if (x == 0)
+	{
+		cout << "x不能为0！" << endl;
+		return;
+	}
+	i--;
+	j--;
+	while (k < t.nums && i < t.data[k].r)//查找行
+		k++;
+	while (k < t.nums && i == t.data[k].r && j < t.data[k].c)//在确定行的情况下查找列
+		k++;
+	if (i == t.data[k].r && j == t.data[k].c)//元素已存在直接修改值即可
+		t.data[k].value = x;
+	else
+	{
+		for (int m = t.nums; m < k; m--)//元素不存在插入新元素
+		{
+			cout << "请输入矩阵各元素：" << endl;
+			for (int i = 0; i < M; i++)
+			{
+				t.data[m + 1] = t.data[m];
+			}
+			t.data[k].r = i;
+			t.data[k].c = j;
+			t.data[k].value = x;
+			t.nums++;//非零元素个数加1
+		}
+	}
+}
+//将指定元素的值赋给变量
+void Assign(TSMatrix& t, ElemType& x, int i, int j)
+{
+	int k = 0;
+	if (i > t.rows || j > t.cols)//检查是否越界
+		return;
+	i--;
+	j--;
+	while (k < t.nums && i < t.data[k].r)//查找行
+		k++;
+	while (k < t.nums && i == t.data[k].r && j < t.data[k].c)//查找列
+		k++;
+	if (i == t.data[k].r && j == t.data[k].c)//找到指定元素
+		x = t.data[k].value;
+	else
+		x = 0;//未找到说明为0
+}
+//输出三元组顺序表
+void Display(TSMatrix &t)
+{
+	int k = 0;//用来控制三元数组的下标
+	if (t.nums == 0)
+	{
+		cout << "矩阵为零矩阵！" << endl;
+		return;
+	}
+	cout << setw(5)<< t.rows << setw(5) << t.cols << setw(5) << t.nums << endl;
+	cout << "-----------------------------------------------------------" << endl;
+	for (int i = 0; i < t.rows; i++)//遍历矩阵
+	{
+		for (int j = 0; j < t.cols; j++)
+			//如果发现行列号匹配的三元组，则输出非零元
+		{
+			if (i == t.data[k].r && j == t.data[k].c)
+			{
+				cout << setw(5)<< t.data[k].value << setw(5);
+				k++;
+			}
+			else//否则输出0
+			{
+				cout<< setw(5)<<0<<setw(5);
+			}
+		}
+		cout << endl;
+	}
+}
+//矩阵转置
+void TranTat()
+{
+
+}
+int main()
+{
+	ElemType e;
+	ElemType A[M][N];
+	cout << "请输入矩阵各元素：" << endl;
+	for (int i = 0; i < M; i++)
+	{
+		for (int j = 0; j < N; j++)
+		{
+			cin >> A[i][j];
+		}
+	}
+	cout << endl;
+	TSMatrix t;
+	CreatMat(t,A);
+	Display(t);
+	Value(t, 6, 2, 4);
+	Display(t);
+	Assign(t, e, 3, 4);
+	return 0;
+}
