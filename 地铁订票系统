@@ -1,0 +1,719 @@
+#include<iostream>
+#include<string>
+#include<cstdlib>
+#define ElemType int
+#define N 10
+
+using namespace std;
+
+static int _max = 0;//（站点数量）
+//static int privilege = 0;//(默认为普通用户，1为管理员用户)
+
+
+ElemType TTrate[2][N];   //       第一行是站点序号，第二行是对应站点当前的人流量
+string tnuocca = "root";
+string drowssap = "123456";
+
+
+//C++写动态开空间代码不要用malloc，会变得不幸！！！！！
+
+/*
+【基本要求】
+（1）使用合适的数据结构存储地铁站数据并将示意图中的数据存入你选择的数据结构中。               在双链表的基础上需要稍微修改一下
+（2）由于地铁还在不断扩建，请实现地铁站的更新、删除与插入功能。                               在双链表的基本运算的基础上需要稍微修改一下
+（3）用户购票时只需输入上车站与下车站，由系统自动计算出票价。                                 先算出距离（按站的数量来计算），根据money(n)=(n+1)/2+1
+（4）输出用户票价的同时输出用户经过的地铁站。                                                 跟（3）一起把行车过程输出
+（5）使用合适的查找算法，依据用户的输入实现地铁站点查询功能。                                 由于目前地铁的建设数量不多，选择顺序查找（可优化）
+（6）记录每个地铁站的人流量总数，在管理员查询时，使用至少 3 种排序算法按照人流量从大到小的    根据数据进行排序（直插、折半插入、希尔、冒泡、
+顺序列出站点名称                                                                              快速、简单选择、堆排序、2路归并排序）
+*/
+
+typedef struct DNode
+{
+	int number = 0; //新添的   序列号
+	string SubName = ""; // 新添的   地铁名
+	ElemType VFrate = 0;   //       人流量
+	struct DNode* prior = NULL;
+	struct DNode* next = NULL;
+}DLinkNode;
+
+//可以优化，拓展自定义初始化，这一步操作可以写入txt中，然后就可以做到只有第一次初始化，之后这些数据都可以进行修改进入即可使用
+/*void CreateListF(DLinkNode * &L, ElemType a[], string b[], int n)
+//采用尾插法建立双链表   【初始化】
+{
+	DLinkNode * s, *r;
+	L = (DLinkNode *)malloc(sizeof(DLinkNode));//创建头节点
+	L->prior = L->next = NULL;//前后指针域置为NULL
+	r = L;//r始终指向尾结点，开始时指向头节点
+	L->number = 0;//头结点的序列号为0
+	for (int i = 0; i < n; i++)//循环创立数据节点
+	{
+		s = (DLinkNode *)malloc(sizeof(DLinkNode));
+		s->number = i + 1;
+		s->VFrate = a[i];
+		s->SubName = b[i];//创建数据节点
+		r->next = s;//尾插法插入
+		s->prior = r;
+		r = s;
+	}
+	_max = n;
+	r->next = NULL;//尾结点的next域置为NULL
+}*/
+
+/*void CreateListF(DLinkNode * L)
+//完成作业的方式：采用尾插法建立双链表   【初始化】
+{
+	DLinkNode *s1, *s2, *s3, *s4, *s5;
+	L = new DLinkNode;//创建头节点
+	L->prior = NULL;//前后指针域置为NULL
+	L->number = 0;//头结点的序列号为0
+	//连续创立数据结点
+	s1 = new DLinkNode;
+	L->next = s1; s1->prior = L;
+	s1->number = 1;
+	s1->VFrate = 2000;//也可以用随机数
+	s1->SubName = "郑州火车站";//创建数据节点
+	s2 = new DLinkNode;
+	s1->next = s2; s2->prior = s1;
+	s2->number = 2;
+	s2->VFrate = 600;//也可以用随机数
+	s2->SubName = "二七广场站";//创建数据节点
+	s3 = new DLinkNode;
+	s2->next = s3; s3->prior = s2;
+	s3->number = 3;
+	s3->VFrate = 500;//也可以用随机数
+	s3->SubName = "人民路站";//创建数据节点
+	s4 = new DLinkNode;
+	s3->next = s4; s4->prior = s3;
+	s4->number = 4;
+	s4->VFrate = 1500;//也可以用随机数
+	s4->SubName = "紫荆山站";//创建数据节点
+	s5 = new DLinkNode;
+	s4->next = s5; s5->prior = s4; s5->next = NULL;
+	s5->number = 5;
+	s5->VFrate = 800;//也可以用随机数
+	s5->SubName = "燕庄站";//创建数据节点
+	_max = 5;
+}*/
+
+bool ListInsert(DLinkNode* L, int i, ElemType e, string name)
+//这里是根据序列来找的，若输入的是名字则可以根据查询来把地铁站名字对应成相应的数字  【插入】
+{
+	int j = 0;
+	DLinkNode* p = L, * s;//p指向头结点，j设置为0
+	if (i <= 0) return false;//i错误，返回false
+	while (j < i - 1 && p != NULL)//查找第i-1个结点
+	{
+		j++;
+		p = p->next;
+	}
+	if (p == NULL) return false;//通过&&右边的条件出去的，即未找到第i-1个结点，返回false
+	else   //找到了第i-1个结点
+	{
+		s = new DLinkNode;//创建新结点s
+		_max++;
+		s->VFrate = e;
+		s->SubName = name;
+		s->number = i;
+		s->next = p->next;//在p之后插入s
+		if (p->next != NULL)
+			p->next->prior = s;
+		s->prior = p;
+		p->next = s;
+		DLinkNode* q = s;
+		while (q->next != NULL)//修改后面代码的序号值
+		{
+			q->next->number++;
+			q = q->next;
+		}
+		return true;
+	}
+}
+
+bool ListDelete(DLinkNode*& L, int i, ElemType& e, string& name, int& nu)
+//这里是根据序列来删除的，若输入的是名字则可以根据查询来把地铁站名字对应成相应的数字  【删除】
+{
+	int j = 0;
+	DLinkNode* p = L, * q;//p指向头结点，j设置为0
+	if (i <= 0) return false;//i错误，返回false
+	while (j < i - 1 && p != NULL)//查找第i-1个结点
+	{
+		j++;
+		p = p->next;
+	}
+	if (p == NULL) return false;//通过&&右边的条件出去的，即未找到第i-1个结点，返回false
+	else   //找到了第i-1个结点
+	{
+		q = p->next;//q指向第i个结点
+		if (q == NULL) return false;
+		e = q->VFrate;
+		nu = q->number;
+		name = q->SubName;
+		p->next = q->next;//从双链表中删除结点q
+		_max--;
+		if (p->next != NULL)
+			p->next->prior = p;
+		delete q;
+		DLinkNode* s = p;
+		while (s->next != NULL)//修改后面代码的序号值
+		{
+			s->next->number--;
+			s = q->next;
+		}
+		return true;
+	}
+}
+
+int CountCosts(int first, int rear)
+//计算费用并输出用户所经过的地铁站      【计算费用】
+{
+	int money;
+	if (first <= 0 || rear <= 0 || first > _max || rear > _max)
+	{
+		cout << "您所输入的数据是错误的！" << endl; //这里可以优化到分析具体是哪一个数据是错误的*** 
+		return -1;//i错误，返回-1
+	}
+	if (first == rear)
+	{
+		cout << "您并没有坐车所以不需要花钱！" << endl;
+		return 0;
+	}
+	else if (first > rear)
+		money = (first - rear + 1) / 2 + 1;
+	else
+		money = (rear - first + 1) / 2 + 1;
+	//cout << "您需要花费共：" << money << "元！";
+	return money;
+}
+
+void BuyTicket(int first, int rear, int num)
+{
+	int price = CountCosts(first, rear);
+	cout << "票价为" << price << " 数量为" << num << " 所以说您需要支付" << price * num << "元";
+}
+
+void PrintPath(DLinkNode* L, int first, int rear)
+//输出用户所经过的地铁站            【输出线路】
+{
+	int j = 0;
+	DLinkNode* p = L;//p指向头结点，j设置为0
+	if (first > 0 && rear > 0 && first <= _max && rear <= _max)
+	{
+		if (first < rear)
+		{
+			cout << "注意您是在往东方向坐车哦！" << endl;
+			while (j < first)//查找第first个结点（初站）
+			{
+				j++;
+				p = p->next;
+			}
+			cout << "您所途径的站是： " << p->SubName;
+			while (j < rear)//查找第rear个结点（末站）
+			{
+				j++;
+				p = p->next;
+				cout << " --- " << p->SubName;
+			}
+			cout << endl;
+		}
+		else
+		{
+			cout << "注意您是在往西方向坐车哦！" << endl;
+			while (j < first && p != NULL)//查找第first个结点（初站）
+			{
+				j++;
+				p = p->next;
+			}
+			cout << "您所途径的站是： " << p->SubName;
+			while (j > rear)//查找第rear个结点（末站）
+			{
+				j--;
+				p = p->prior;
+				cout << " --- " << p->SubName;
+			}
+			cout << endl;
+		}
+	}
+}
+
+int Transform(DLinkNode* L, string name)
+//根据你输入的地铁站名字转换成相应的序号  【地铁站名转换为序列号】
+{
+	DLinkNode* p = L->next;//p指向头结点
+	while (p != NULL)
+	{
+		if (p->SubName == name)
+			return p->number;
+		else
+			p = p->next;
+	}
+	return -1;
+}
+
+void DisplayInf(DLinkNode* L)
+//将所有的站点名称给显示，让用户选择自己想要了解的        【站点查询】  可以优化，可以在站点的定义里加入站点的信息，进而加入更多的功能
+{
+	cout << "共有" << _max << "个站点，";
+	cout << "输入站点名，例如燕庄站（默认输入0为全站）";
+	string input;
+	cin >> input;
+	if (input == "0")
+	{
+		cout << "当前一号线所有站点如下：（前面显示的为序号）" << endl;
+		DLinkNode* p = L->next;//p指向头结点
+		cout << p->number << " " << p->SubName;
+		while (p->next != NULL)
+		{
+			p = p->next;
+			cout << "---" << p->number << " " << p->SubName;
+		}
+		cout << endl;
+	}
+	else
+	{
+		DLinkNode* p = L->next;//p指向头结点
+		while (p != NULL)
+		{
+			if (p->SubName == input)
+			{
+				cout << input << "的站点序号是：" << p->number << endl;
+				if (p->prior == NULL)
+					cout << "无左站点" << endl;
+				else
+					cout << input << "的左站点为：" << p->prior->SubName << endl;
+				if (p->next == NULL)
+					cout << "无右站点" << endl;
+				else
+					cout << input << "的右站点为：" << p->next->SubName << endl;
+				break;
+			}
+			else
+				p = p->next;
+		}
+		if (p == NULL)
+			cout << "您查询的站点目前不存在或者是您的输入不规范（注意输入时要带站哦）！";
+	}
+}
+
+void CopyRate(DLinkNode* L)
+//将人流量的数值或者其序号进行储存     【排序准备】
+{
+	int i;
+	DLinkNode* p = L->next;
+	TTrate[0][0] = 0;
+	for (i = 1; i <= _max; i++)
+	{
+		TTrate[0][i] = i;
+		TTrate[1][i] = p->VFrate;
+		p = p->next;
+	}
+}
+
+void swap(ElemType& a, ElemType& b)
+//将人流量的数值或者其序号进行交换     【交换数据】
+{
+	a = a ^ b;
+	b = a ^ b;
+	a = a ^ b;
+}
+
+void PrintResult(DLinkNode*& L)
+//将排序（从大到小）的结果输出          【输出结果】
+{
+	ElemType i, j;
+	DLinkNode* p = L->next;
+	if (p != NULL)
+	{
+		cout << "按照人流量从大到小的顺序列出站点名称:" << endl;
+		for (i = 1; i < _max; i++)
+		{
+			for (j = 1; j < TTrate[0][i]; j++)    //找到指向我们想要输出的序列的指针    可以优化，可以用空间换时间，用一个string的数组存储每个站的名称，做到将序号与名称的对应
+				p = p->next;
+			cout << p->SubName << "(人流量：" << TTrate[1][i] << ") --- ";
+			p = L->next;
+		}
+		for (j = 1; j < TTrate[0][_max]; j++)
+			p = p->next;
+		cout << p->SubName << "(人流量：" << TTrate[1][i] << ")！";
+	}
+	else
+		cout << "站点为空！";
+}
+
+void InsertSort(DLinkNode*& L)
+//                                       【直接插入排序】
+{
+	CopyRate(L);
+	int i, j;
+	for (i = 2; i <= _max; i++)//从2开始，因为1默认为有序区，用0来保存排序中的暂存数据
+	{
+		if (TTrate[1][i] > TTrate[1][i - 1])
+		{
+			TTrate[0][0] = TTrate[0][i];
+			TTrate[1][0] = TTrate[1][i];
+			j = i - 1;
+			do  //找i的插入位置
+			{
+				TTrate[1][j + 1] = TTrate[1][j];
+				TTrate[0][j + 1] = TTrate[0][j];//序号和数值的位置同时发生改变
+				j--;
+			} while (j >= 1 && TTrate[1][j] < TTrate[1][0]);
+			TTrate[1][j + 1] = TTrate[1][0];
+			TTrate[0][j + 1] = TTrate[0][0];
+		}
+	}//此时排序完成
+}
+
+void BubbleSort(DLinkNode*& L)
+//                                       【冒泡排序】
+{
+	CopyRate(L);
+	int i, j;
+	bool exchange;
+	for (i = 1; i < _max; i++)
+	{
+		exchange = false;  //一趟前exchange置为假
+		for (j = _max; j > i; j--)
+			if (TTrate[1][j] > TTrate[1][j - 1])
+			{
+				swap(TTrate[1][j], TTrate[1][j - 1]);
+				swap(TTrate[0][j], TTrate[0][j - 1]);
+				exchange = true;         //一有交换，exchange置为真
+			}
+		if (!exchange)   //本次没有发生交换，中途结束算法
+			return;
+	}//此时排序完成
+}
+
+void SelectSort(DLinkNode*& L)
+//                                       【简单选择排序】
+{
+	CopyRate(L);
+	int i, j, k;
+	for (i = 1; i < _max; i++)  //做第i趟排序
+	{
+		k = i;
+		for (j = i + 1; j < _max + 1; j++)  //在当前无序区中选最大的k
+			if (TTrate[1][j] > TTrate[1][k])
+				k = j;                   //k记录下来目前找到的最大所在的位置
+		if (k != i)                 //i和k两个元素交换
+		{
+			swap(TTrate[1][i], TTrate[1][k]);
+			swap(TTrate[0][i], TTrate[0][k]);
+		}
+	}//此时排序完成
+}
+
+void print1()
+{
+	cout << endl;
+	cout << "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *" << endl;
+	cout << "*      >_<                                                          *" << endl;
+	cout << "*                                                                   *" << endl;
+	cout << "*      您好，欢迎进入我们的地铁订票系统！                           *" << endl;
+	cout << "*      Hello, welcome to our subway booking system!                 *" << endl;
+	cout << "*      请输入您想使用的功能：                                       *" << endl;
+	cout << "*      Please enter the function you want to use:                   *" << endl;
+	cout << "*                                                                   *" << endl;
+	cout << "*                                                                   *" << endl;
+	cout << "*      编号0：登录超级用户                                          *" << endl;
+	cout << "*             Logging in to superUser                               *" << endl;
+	cout << "*      编号1：计算票价并显示您所经过的地铁站                        *" << endl;
+	cout << "*             Calculate the fare and display the station you pass   *" << endl;
+	cout << "*      编号2：查询站点信息                                          *" << endl;
+	cout << "*             Querying Site Information                             *" << endl;
+	cout << "*      编号3：购票操作                                              *" << endl;
+	cout << "*             Buy a ticket operations                               *" << endl;
+	cout << "*      编号4：退出系统操作                                          *" << endl;
+	cout << "*             Exiting the System                                    *" << endl;
+	cout << "*                                                                   *" << endl;
+	cout << "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *" << endl;
+	cout << endl;
+}
+
+void print2()
+{
+	cout << endl;
+	cout << "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *" << endl;
+	cout << "*      >_<                                                 *_*      *" << endl;
+	cout << "*                                                                   *" << endl;
+	cout << "*      您好，欢迎进入我们的地铁订票系统！                           *" << endl;
+	cout << "*      Hello, welcome to our subway booking system!                 *" << endl;
+	cout << "*      请输入您想使用的功能：                                       *" << endl;
+	cout << "*      Please enter the function you want to use:                   *" << endl;
+	cout << "*                                                                   *" << endl;
+	cout << "*                                                                   *" << endl;
+	cout << "*      编号0：退出超级用户                                          *" << endl;
+	cout << "*             Exiting a superuser                                   *" << endl;
+	cout << "*      编号1：地铁站的插入                                          *" << endl;
+	cout << "*             Subway station insertion                              *" << endl;
+	cout << "*      编号2：地铁站的删除                                          *" << endl;
+	cout << "*             Deletion of subway stations                           *" << endl;
+	cout << "*      编号3：人流量大小排序（按站点）                              *" << endl;
+	cout << "*             Sort by Foot Traffic Size (by site)                   *" << endl;
+	cout << "*      编号4：计算票价并显示您所经过的地铁站                        *" << endl;
+	cout << "*             Calculate the fare and display the station you pass   *" << endl;
+	cout << "*      编号5：查询站点信息                                          *" << endl;
+	cout << "*             Querying Site Information                             *" << endl;
+	cout << "*                                                                   *" << endl;
+	cout << "*                                                                   *" << endl;
+	cout << "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *" << endl;
+	cout << endl;
+}
+
+void print3()
+{
+	cout << endl;
+	cout << "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *" << endl;
+	cout << "*      >_<                      @_@                        *_*      *" << endl;
+	cout << "*                                                                   *" << endl;
+	cout << "*      您好，欢迎进入我们的地铁订票系统！                           *" << endl;
+	cout << "*      Hello, welcome to our subway booking system!                 *" << endl;
+	cout << "*      请输入您想使用的功能：                                       *" << endl;
+	cout << "*      Please enter the function you want to use:                   *" << endl;
+	cout << "*                                                                   *" << endl;
+	cout << "*                                                                   *" << endl;
+	cout << "*      编号0：退出排序查询                                          *" << endl;
+	cout << "*             Exit sort query                                       *" << endl;
+	cout << "*      编号1：直接插入排序                                          *" << endl;
+	cout << "*             Direct insertion sort                                 *" << endl;
+	cout << "*      编号2：冒泡排序                                              *" << endl;
+	cout << "*             Bubble sort                                           *" << endl;
+	cout << "*      编号3：简单选择排序                                          *" << endl;
+	cout << "*             Simple selection sort                                 *" << endl;
+	cout << "*                                                                   *" << endl;
+	cout << "*                                                                   *" << endl;
+	cout << "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *" << endl;
+	cout << endl;
+}
+
+int main()
+{
+	DLinkNode L0;
+	DLinkNode* L = &L0;
+	DLinkNode* s1, * s2, * s3, * s4, * s5;
+	L = new DLinkNode;//创建头节点
+	L->prior = NULL;//前后指针域置为NULL
+	L->number = 0;//头结点的序列号为0
+	//连续创立数据结点
+	s1 = new DLinkNode;
+	L->next = s1; s1->prior = L;
+	s1->number = 1;
+	s1->VFrate = 2000;//也可以用随机数
+	s1->SubName = "郑州火车站";//创建数据节点
+	s2 = new DLinkNode;
+	s1->next = s2; s2->prior = s1;
+	s2->number = 2;
+	s2->VFrate = 600;//也可以用随机数
+	s2->SubName = "二七广场站";//创建数据节点
+	s3 = new DLinkNode;
+	s2->next = s3; s3->prior = s2;
+	s3->number = 3;
+	s3->VFrate = 500;//也可以用随机数
+	s3->SubName = "人民路站";//创建数据节点
+	s4 = new DLinkNode;
+	s3->next = s4; s4->prior = s3;
+	s4->number = 4;
+	s4->VFrate = 1500;//也可以用随机数
+	s4->SubName = "紫荆山站";//创建数据节点
+	s5 = new DLinkNode;
+	s4->next = s5; s5->prior = s4; s5->next = NULL;
+	s5->number = 5;
+	s5->VFrate = 800;//也可以用随机数
+	s5->SubName = "燕庄站";//创建数据节点
+	_max = 5;//              【初始化完成】
+	int n, d = 1;
+	string account, password;
+	while (d)
+	{
+		print1();
+		cin >> n;
+		if (n == 4)//退出系统操作
+			d = 0;
+		else if (n == 3)//购票操作
+		{
+			cout << "当前一号线所有站点如下：（前面显示的为序号）" << endl;
+			DLinkNode* p = L->next;//p指向头结点
+			cout << p->number << p->SubName;
+			while (p->next != NULL)
+			{
+				p = p->next;
+				cout << " --- " << p->number << p->SubName;
+			}
+			cout << endl;
+			int first, rear, num;
+			cout << "请输入您的初站位置，末站位置以及票数：";
+			cin >> first >> rear >> num;
+			BuyTicket(first, rear, num);          //可以优化，处理一下不符合要求的数据
+			cout << endl << "已出票";
+		}
+		else if (n == 2)//查询站点信息
+		{
+			DisplayInf(L);
+		}
+		else if (n == 1)//计算票价并显示您所经过的地铁站
+		{
+			int first, rear;
+			cout << "当前一号线所有站点如下：（前面显示的为序号）" << endl;
+			DLinkNode* p = L->next;//p指向头结点
+			cout << p->number << p->SubName;
+			while (p->next != NULL)
+			{
+				p = p->next;
+				cout << " --- " << p->number << p->SubName;
+			}
+			cout << endl;
+			cout << "请输入您的初站位置，末站位置(数字，例如1 3)：";
+			cin >> first >> rear;
+			int money = CountCosts(first, rear);
+			if (money != -1)
+				cout << "您需要花费共：" << money << "元！" << endl;
+			PrintPath(L, first, rear);
+		}
+		else if (n == 0)//登录超级用户
+		{
+			int state = 0;//零默认表示登录失败
+			int total = 1;//登录次数
+			while (total <= 5)
+			{
+				cout << "请输入你的超级账户：";
+				cin >> account;
+				cout << "请输入你的超级账户的密码：";
+				cin >> password;
+				if (account != tnuocca || password != drowssap)
+				{
+					cout << "你的账户或者密码输入错误！" << endl;
+					cout << "你还有" << 5 - total << "次输密码的机会！";
+				}
+				else if (account == tnuocca && password == drowssap)
+				{
+					state = 1;
+					break;
+				}
+				total++;
+			}
+			if (state == 0)
+				break;
+			else if (state == 1)
+			{
+				cout << "您现在是超级用户！" << endl;
+				int n0, d0 = 1;
+				while (d0)
+				{
+					print2();
+					cin >> n0;
+					if (n0 == 0)//退出超级用户
+						d0 = 0;
+					else if (n0 == 1)//地铁站的插入
+					{
+						cout << "当前一号线所有站点如下：（前面显示的为序号）" << endl;
+						DLinkNode* p = L->next;//p指向头结点
+						cout << p->number << p->SubName;
+						while (p->next != NULL)
+						{
+							p = p->next;
+							cout << " --- " << p->number << p->SubName;
+						}
+						cout << endl;
+						int i;
+						cout << "请输入你要插入的位置：";
+						cin >> i;
+						ElemType e;
+						cout << "请输入它的大致人流量：";
+						cin >> e;
+						string name;
+						cout << "请输入你要插入的名字：";
+						cin >> name;
+						ListInsert(L, i, e, name);
+					}
+					else if (n0 == 2)//地铁站的删除
+					{
+						cout << "当前一号线所有站点如下：（前面显示的为序号）" << endl;
+						DLinkNode* p = L->next;//p指向头结点
+						cout << p->number << p->SubName;
+						while (p->next != NULL)
+						{
+							p = p->next;
+							cout << " --- " << p->number << p->SubName;
+						}
+						cout << endl;
+						int i;
+						cout << "请输入你要删除的位置：";
+						cin >> i;
+						ElemType e;
+						string name;
+						int nu;
+						ListDelete(L, i, e, name, nu);
+						cout << "它的站名是：" << name << endl;
+						cout << "他原本的序号是：" << nu << endl;
+						cout << "它的大致人流量为：" << e << endl;
+					}
+					else if (n0 == 3)//人流量大小排序（按站点）
+					{
+						int n1, d1 = 1;
+						while (d1)
+						{
+							print3();
+							cin >> n1;
+							if (n1 == 0)//退出查询人流量大小排序
+								d1 = 0;
+							else if (n1 == 1)//直接插入排序
+							{
+								InsertSort(L);
+								PrintResult(L);
+							}
+							else if (n1 == 2)//冒泡排序
+							{
+								BubbleSort(L);
+								PrintResult(L);
+							}
+							else if (n1 == 3)//简单选择排序
+							{
+								SelectSort(L);
+								PrintResult(L);
+							}
+							else
+							{
+								cout << "你的输入有误，请重新输入";
+							}
+						}
+					}
+					else if (n0 == 4)//计算票价并显示您所经过的地铁站
+					{
+						int first, rear;
+						cout << "当前一号线所有站点如下：（前面显示的为序号）" << endl;
+						DLinkNode* p = L->next;//p指向头结点
+						cout << p->number << p->SubName;
+						while (p->next != NULL)
+						{
+							p = p->next;
+							cout << " --- " << p->number << p->SubName;
+						}
+						cout << endl;
+						cout << "请输入您的初站位置，末站位置(数字，例如1 3)：";
+						cin >> first >> rear;
+						int money = CountCosts(first, rear);
+						if (money != -1)
+							cout << "您需要花费共：" << money << "元！" << endl;
+						PrintPath(L, first, rear);
+					}
+					else if (n0 == 5)//查询站点信息
+					{
+						DisplayInf(L);
+					}
+					else
+					{
+						cout << "你的输入有误，请重新输入";
+					}
+				}
+				cout << "已退出超级用户！";
+			}
+		}
+		else
+		{
+			cout << "你的输入有误，请重新输入";
+		}
+	}
+	cout << "感谢您的使用！";
+	return 0;
+}
