@@ -1,0 +1,68 @@
+一、操作对象：定义站点结构体
+
+typedef struct DLinkNode
+{
+	int sum = 0;//车站总数                                                  
+	int number = 0;//新添的序列号
+	string subname;//新添的地铁名
+	int population = 0;
+	struct DLinkNode* prior;
+	struct DLinkNode* next;
+}DLinkNode;
+
+二、程序在main()函数中调用
+
+三、调用的函数：
+
+//用车站信息初始化双链表
+void InitSubNode(DLinkNode*& L);
+
+//插入站点
+void ListInsert(DLinkNode*& L);
+
+//删除站点
+void ListDelete(DLinkNode*& L);
+
+//查找双链表元素
+DLinkNode* FindElem(DLinkNode* L, int elem);
+
+//输出途径站点
+void Display_Path(DLinkNode* L, int first, int last);
+
+//输出全部站点
+void Display_ALL(DLinkNode* L);
+
+//计算费用
+void Fare(DLinkNode* L);
+
+//地铁站的更新
+void ListUpdate(DLinkNode*& L);
+
+//站点查询
+void GetNode(DLinkNode* L);
+
+//输出排好序的站点
+void Display_Finished_station(DLinkNode* L);
+
+//快速排序
+void QuickSort(DLinkNode* low, DLinkNode* high);
+
+//冒泡排序
+void BubbleSort(DLinkNode* L);
+
+//插入排序
+void InsertSort(DLinkNode* L);
+
+//排序方式
+void Sort(DLinkNode* L);
+
+//管理员界面
+void root_InterFace(DLinkNode*& L);
+
+//普通用户登录
+void Normal_Login(DLinkNode* L);
+
+//某个用户身份登录
+void User_Login();
+
+int main()

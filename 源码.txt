@@ -1,0 +1,695 @@
+#include <bits/stdc++.h>
+#include <conio.h>
+using namespace std;
+
+typedef int ElemType;
+typedef struct DLinkNode
+{
+	int sum = 0;//车站总数
+	int number = 0;//新添的序列号
+	string subname;//新添的地铁名
+	int population = 0;
+	struct DLinkNode* prior;
+	struct DLinkNode* next;
+}DLinkNode;
+
+//用车站信息初始化双链表
+void InitSubNode(DLinkNode*& L);
+
+//插入站点
+void ListInsert(DLinkNode*& L);
+
+//删除站点
+void ListDelete(DLinkNode*& L);
+
+//查找双链表元素
+DLinkNode* FindElem(DLinkNode* L, int elem);
+
+//输出途径站点
+void Display_Path(DLinkNode* L, int first, int last);
+
+//输出全部站点
+void Display_ALL(DLinkNode* L);
+
+//计算费用
+void Fare(DLinkNode* L);
+
+//地铁站的更新
+void ListUpdate(DLinkNode*& L);
+
+//站点查询
+void GetNode(DLinkNode* L);
+
+//输出排好序的站点
+void Display_Finished_station(DLinkNode* L);
+
+//快速排序
+void QuickSort(DLinkNode* low, DLinkNode* high);
+
+//冒泡排序
+void BubbleSort(DLinkNode* L);
+
+//插入排序
+void InsertSort(DLinkNode* L);
+
+//排序方式
+void Sort(DLinkNode* L);
+
+//管理员界面
+void root_InterFace(DLinkNode*& L);
+
+//管理员登录
+void root_Login(DLinkNode*& L);
+
+//普通用户登录
+void Normal_Login(DLinkNode* L);
+
+//某个用户身份登录
+void User_Login();
+
+int main()
+{
+	User_Login();
+	return 0;
+}
+
+void InitSubNode(DLinkNode*& L)
+{
+	L = new DLinkNode;//建立头结点
+	L->number = 0;
+	L->prior = NULL;
+
+	//尾插法建立数据结点
+	DLinkNode* s1, * s2, * s3, * s4, * s5;
+	s1 = new DLinkNode;
+	L->next = s1; s1->prior = L;
+	s1->number = 1;
+	s1->population = 2000;
+	s1->subname = "郑州火车站";
+	s2 = new DLinkNode;
+	s1->next = s2; s2->prior = s1;
+	s2->number = 2;
+	s2->population = 600;
+	s2->subname = "二七广场";
+	s3 = new DLinkNode;
+	s2->next = s3; s3->prior = s2;
+	s3->number = 3;
+	s3->population = 500;
+	s3->subname = "人民路";
+	s4 = new DLinkNode;
+	s3->next = s4; s4->prior = s3;
+	s4->number = 4;
+	s4->population = 1500;
+	s4->subname = "紫荆山";
+	s5 = new DLinkNode;
+	s4->next = s5;	s5->prior = s4; s5->next = NULL;
+	s5->number = 5;
+	s5->population = 800;
+	s5->subname = "燕庄";
+
+	L->sum = 5;//站点总数
+}
+
+void ListInsert(DLinkNode*& L)
+{
+	int i;
+	cout << "请输入你要插入的位置：";
+	cin >> i;
+	ElemType e;
+	cout << "请输入它的大致人流量：";
+	cin >> e;
+	string name;
+	cout << "请输入你要插入的名字：";
+	cin >> name;
+	DLinkNode* s, * p, * q;
+	p = L;
+	int j = 0;
+	while (j < i - 1 && p != NULL)
+	{
+		p = p->next;
+		j++;
+	}
+	if (p == NULL)
+		return;
+	else
+	{
+		s = new DLinkNode;
+		s->population = e;
+		s->number = i;
+		s->subname = name;
+		s->next = p->next;
+		if (p->next != NULL)
+			p->next->prior = s;
+		p->next = s;
+		s->prior = p;
+		L->sum++;//地铁站总数加1
+		q = s->next;
+		//后续站点的序号加1
+		while (q != NULL)
+		{
+			q->number++;
+			q = q->next;
+		}
+		cout << "添加成功！" << endl;
+	}
+}
+
+void ListDelete(DLinkNode*& L)
+{
+	int i;
+	cout << "请输入你要删除的位置：";
+	cin >> i;
+	DLinkNode* s, * q, * p, * t;
+	int j = 0;
+	p = L;
+	while (j < i - 1 && p != NULL)
+	{
+		p = p->next;
+		j++;
+	}
+	if (p == NULL)
+		return;
+	else
+	{
+		q = p->next;
+		if (q == NULL)
+		{
+			return;
+		}
+		p->next = q->next;
+		if (q->next != NULL)
+			q->next->prior = p;
+		free(q);
+		L->sum--;//地铁站总数减1
+		t = p->next;
+		//后续地铁站序号依次减1
+		while (t != NULL)
+		{
+			t->number--;
+			t = t->next;
+		}
+		cout << "删除成功！" << endl;
+	}
+}
+
+DLinkNode* FindElem(DLinkNode* L, int elem)
+{
+	DLinkNode* p = L;
+	while (p)
+	{
+		if (p->number == elem)
+			break;
+		p = p->next;
+	}
+	return p;
+}
+
+void Display_Path(DLinkNode* L, int first, int last)
+{
+	DLinkNode* p, * q;
+	DLinkNode* first_node = FindElem(L, first);
+	DLinkNode* last_node = FindElem(L, last);
+	p = first_node;
+	q = p->next;
+	if (last > first)
+	{
+		while (p != last_node)
+		{
+			cout << p->subname << "--";
+			p = p->next;
+		}
+		cout << p->subname << endl;
+	}
+	else if (last < first)
+	{
+		while (p != last_node)
+		{
+			cout << p->subname << "--";
+			p = p->prior;
+		}
+		cout << p->subname << endl;
+	}
+}
+
+void Display_ALL(DLinkNode* L)
+{
+	cout << "地铁一号线所有站点：";
+	DLinkNode* p;
+	p = L->next;
+	while (p->next != NULL)
+	{
+		cout << p->number << p->subname << "--";
+		p = p->next;
+	}
+	cout << p->number << p->subname << endl;
+}
+
+void Fare(DLinkNode* L)
+{
+	int first, last;//始发站和终点站
+	int money;//票价
+	int num;//票数
+	Display_ALL(L);
+	while (1)
+	{
+		cout << "请输入您的始发站和终点站和票数：";
+		cin >> first >> last >> num;
+		if (first<1 || last>L->sum || first == last || num <= 0)
+		{
+			cout << "输入错误，请重新输入：" << endl;
+		}
+		else
+			break;
+	}
+	if (abs(last - first) >= 1 && abs(last - first) <= 2)
+		money = 2 * num;
+	else money = (abs(last - first) - 1) * num;
+	cout << "请扫码支付" << money << "元" << endl;
+	cout << "您所途径的站点为：";
+	Display_Path(L, first, last);
+}
+
+void ListUpdate(DLinkNode*& L)
+{
+	int _num;
+	string _name;
+	DLinkNode* p;
+	cout << "请输入要修改的地铁站序号及新地铁站名：";
+	cin >> _num >> _name;
+	p = FindElem(L, _num);
+	p->subname = _name;
+	cout << endl;
+	cout << "修改成功！" << endl;
+	Display_ALL(L);
+}
+
+void GetNode(DLinkNode* L)
+{
+	int num1;
+	DLinkNode* p;
+	Display_ALL(L);
+	cout << "请输入要查询的站点序号：";
+	cin >> num1;
+	p = FindElem(L, num1);
+	cout << "您要查询的站点--" << p->subname << ",当前人流量为：" << p->population << endl;
+	if (p->prior != L)
+		cout << "上一站为：" << p->prior->subname << endl;
+	else
+		cout << "该站为始发站！" << endl;
+	if (p->next != NULL)
+		cout << "下一站为：" << p->next->subname << endl;
+	else
+		cout << "该站为终点站！" << endl;
+}
+
+void Display_Finished_station(DLinkNode* L)
+{
+	DLinkNode* p;
+	p = L->next;
+	while (p->next != NULL)
+	{
+		cout << p->subname << "--";
+		p = p->next;
+	}
+	cout << p->subname << endl;
+}
+
+void QuickSort(DLinkNode* low, DLinkNode* high)
+{
+	DLinkNode* i = low;
+	DLinkNode* j = high;
+	DLinkNode* base = new DLinkNode;//基准结点
+	if (low == NULL)
+		return;
+	base->population = low->population;
+	base->subname = low->subname;
+	if (low == high || low->prior == high)
+		return;
+
+	while (low != high && low->prior != high)
+	{
+		//从右向左扫描，直到找到一个大于基准的结点
+		for (; low != high && low->prior != high && base->population >= high->population; high = high->prior);
+		if (base->population < high->population)
+		{
+			low->population = high->population;
+			low->subname = high->subname;
+		}
+		//从左向右扫描，直到找到一个小于基准地结点
+		for (; low != high && low->prior != high && base->population <= low->population; low = low->next);
+		if (base->population > low->population)
+		{
+			high->population = low->population;
+			high->subname = low->subname;
+		}
+	}
+	//将基准结点归位
+	low->population = base->population;
+	low->subname = base->subname;
+	QuickSort(i, low->prior);
+	QuickSort(low->next, j);
+}
+
+void BubbleSort(DLinkNode* L)
+{
+	int flag = 1;//用来标记是否发生交换
+	DLinkNode* head = L;
+	DLinkNode* tail = NULL;
+	DLinkNode* p, * q;
+
+	while (flag)
+	{
+		flag = 0;
+		p = head->next;
+		while (p->next != tail)
+		{
+			//交换节点
+			if (p->population < p->next->population)
+			{
+				flag = 1;
+				q = p->next;
+				p->next = q->next;
+				if (q->next != NULL)
+				{
+					q->next->prior = p;
+				}
+				p->prior->next = q;
+				q->prior = p->prior;
+				p->prior = q;
+				q->next = p;
+			}
+			else
+			{
+				p = p->next;
+			}
+		}
+		//从尾部开始起泡
+		tail = p;
+		p = tail->prior;
+		while (flag && p->prior != head)
+		{
+			if (p->population > p->prior->population)
+			{
+				q = p->prior;
+				p->prior = q->prior;
+				if (q->prior != NULL)
+				{
+					q->prior->next = p;
+				}
+				p->next->prior = q;
+				q->next = p->next;
+				p->next = q;
+				q->prior = p;
+			}
+			else
+			{
+				p = p->prior;
+			}
+		}
+		head = p;
+	}
+	Display_Finished_station(L);
+}
+
+void InsertSort(DLinkNode* L)
+{
+	DLinkNode* p, * q, * temp;
+	p = L->next;
+	if (p != NULL)
+	{
+		for (p = p->next; p; p = p->next)//从第二个数开始排序，第一个数默认有序
+		{
+			temp = p;
+			for (q = p->prior; q != L; q = q->prior)
+			{
+				if (q->population >= temp->population)//降序,结束循环
+				{
+					break;
+				}
+			}
+			if (q->next != p)//若q前移，插入temp
+			{
+				if (temp->next != NULL)//temp不是最后一个结点
+				{
+					temp->prior->next = temp->next;
+					temp->next->prior = temp->prior;
+
+					temp->next = q->next;
+					q->next->prior = temp;
+					temp->prior = q;
+					q->next = temp;
+				}
+				else
+				{
+					temp->prior->next = NULL;
+
+					temp->next = q->next;
+					q->next->prior = temp;
+					temp->prior = q;
+					q->next = temp;
+				}
+			}
+		}
+	}
+	Display_Finished_station(L);
+}
+
+void Sort(DLinkNode* L)
+{
+	int t4 = 1;
+	while (t4)
+	{
+		cout << endl;
+		cout << "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *" << endl;
+		cout << "*                                                                   *" << endl;
+		cout << "*                             排序系统                              *" << endl;
+		cout << "*      请输入您想使用的功能：                                       *" << endl;
+		cout << "*                                                                   *" << endl;
+		cout << "*      编号0：退出排序系统                                          *" << endl;
+		cout << "*      编号1：快速排序                                              *" << endl;
+		cout << "*      编号2：冒泡排序                                              *" << endl;
+		cout << "*      编号3：直接插入排序                                          *" << endl;
+		cout << "*                                                                   *" << endl;
+		cout << "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *" << endl;
+		cout << endl;
+
+		int choice;
+
+		do
+		{
+			cin >> choice;
+			switch (choice)
+			{
+			case 0:
+				t4 = 0;
+				break;
+				
+			case 1:
+				QuickSort(L->next, FindElem(L, L->sum));
+				Display_Finished_station(L);
+				break;
+			case 2:
+				BubbleSort(L);
+				break;
+			case 3:
+				InsertSort(L);
+				break;
+			default:
+				cout << "输入有误，请重新输入：";
+				break;
+			}
+		} while (choice < 0 || choice > 3);
+	}
+}
+
+void root_InterFace(DLinkNode*& L)
+{
+	   int t3 = 1;
+		int cnt = 5;
+		int flag;//用于标记密码是否输入正确以提前结束循环
+		int index;
+		char password[100];
+		char str[] = { "88888888" };
+
+		cout << "请输入您的密码：";
+		for (int i = 1; i <= 5 && cnt > 0; i++)
+		{
+			index = 0;
+			flag = 0;
+			while (1)
+			{
+				char ch;
+				ch = _getch();
+				if (ch == 8) //退格键
+				{
+					if (index != 0)
+					{
+						cout << char(8) << " " << char(8);
+						index--;
+					}
+				}
+				else if (ch == '\r') //回车键
+				{
+					password[index] = '\0';
+					cout << endl;
+					break;
+				}
+				else
+				{
+					cout << "*";
+					password[index++] = ch;
+				}
+			}
+			for (int j = 0; j <= strlen(password); j++)
+			{
+				if (str[j] != password[j])
+				{
+					flag = 1;
+					cnt--;
+					if (cnt > 0)
+						cout << "密码错误，你还有" << cnt << "次机会，请重新输入：";
+					break;
+				}
+			}
+			//密码输入正确
+			if (flag == 0)
+			{
+				while (t3)
+				{
+					cout << endl;
+					cout << "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *" << endl;
+					cout << "*                                                                   *" << endl;
+					cout << "*                          地铁管理系统                             *" << endl;
+					cout << "*      请输入您想使用的功能：                                       *" << endl;
+					cout << "*                                                                   *" << endl;
+					cout << "*      编号0：退出超级用户                                          *" << endl;
+					cout << "*      编号1：地铁站的插入                                          *" << endl;
+					cout << "*      编号2：地铁站的删除                                          *" << endl;
+					cout << "*      编号3：地铁站的更新                                          *" << endl;
+					cout << "*      编号4：人流量大小排序（按站点）                              *" << endl;
+					cout << "*      编号5：查询站点信息                                          *" << endl;
+					cout << "*                                                                   *" << endl;
+					cout << "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *" << endl;
+					cout << endl;
+
+					int choice;
+					do
+					{
+						cin >> choice;
+						switch (choice)
+						{
+						case 0:
+							t3 = 0;
+							break;
+						case 1:
+							ListInsert(L);
+							break;
+						case 2:
+							ListDelete(L);
+							break;
+						case 3:
+							ListUpdate(L);
+							break;
+						case 4:
+							Sort(L);
+							break;
+						case 5:
+							GetNode(L);
+							break;
+						default:
+							cout << "输入有误，请重新输入：";
+							break;
+						}
+					} while (choice < 0 || choice > 5);
+				}
+				break;
+			}
+		}
+
+	
+	
+
+}
+
+void Normal_Login(DLinkNode* L)
+{
+	int t2 = 1;
+	while (t2)
+	{
+		cout << endl;
+		cout << "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *" << endl;
+		cout << "*                                                                   *" << endl;
+		cout << "*      您好，欢迎进入我们的地铁订票系统！                           *" << endl;
+		cout << "*      请输入您想使用的功能：                                       *" << endl;
+		cout << "*                                                                   *" << endl;
+		cout << "*                       编号0：购票                                 *" << endl;
+		cout << "*                       编号1：查询站点信息						 *" << endl;
+		cout << "*                       编号2：退出系统操作                         *" << endl;
+		cout << "*                                                                   *" << endl;
+		cout << "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *" << endl;
+		cout << endl;
+
+		int choice;
+		do
+		{
+			cin >> choice;
+			switch (choice)
+			{
+			case 0:
+				Fare(L);
+				break;
+			case 1:
+				GetNode(L);
+				break;
+			case 2:
+				t2 = 0;
+				break;
+			default:
+				cout << "输入有误，请重新输入：";
+				break;
+			}
+		} while (choice < 0 || choice > 2);
+	}
+}
+
+void User_Login()
+{
+	int t1 = 1;
+	DLinkNode* L;
+	InitSubNode(L);
+	while (t1)
+	{
+		cout << endl;
+		cout << "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *" << endl;
+		cout << "*                                                                   *" << endl;
+		cout << "*                          地铁订票系统                             *" << endl;
+		cout << "*                                                                   *" << endl;
+		cout << "*                         0：管理员身份登录                         *" << endl;
+		cout << "*                         1：普通用户身份登录                       *" << endl;
+		cout << "*                         2：退出系统                               *" << endl;
+		cout << "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *" << endl;
+		cout << endl;
+
+		int choice;
+		do
+		{
+			cin >> choice;
+			switch (choice)
+			{
+			case 0:
+				root_InterFace(L);
+				break;
+			case 1:
+				Normal_Login(L);
+				break;
+			case 2:
+				t1 = 0;
+				break;
+			default:
+				cout << "输入有误，请重新输入：";
+				break;
+			}
+		} while (choice < 0 || choice > 2);
+	}
+	
+}
